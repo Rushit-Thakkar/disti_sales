@@ -63,8 +63,10 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     const user = session?.user;
 
-    if (!session || (user as any).role !== 'SALESMAN') {
-        return NextResponse.json({ error: "Unauthorized. Only Salesmen can create orders currently." }, { status: 403 });
+    const userRole = (user as any).role;
+
+    if (!session || (userRole !== 'SALESMAN' && userRole !== 'DISTRIBUTOR')) {
+        return NextResponse.json({ error: "Unauthorized. Only Salesmen or Distributors can create orders." }, { status: 403 });
     }
 
     const { items, partyId } = await req.json();
