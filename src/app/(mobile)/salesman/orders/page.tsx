@@ -47,6 +47,15 @@ export default function SalesmanHistoryPage() {
                     ))}
                 </div>
             )}
+            )}
+
+            {/* Floating Action Button for New Order */}
+            <a
+                href="/salesman/orders/create"
+                className="fixed bottom-20 right-4 bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors z-50 text-2xl font-bold"
+            >
+                +
+            </a>
         </div>
     );
 }
