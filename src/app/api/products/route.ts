@@ -67,7 +67,12 @@ export async function DELETE(req: Request) {
     try {
         await prisma.product.delete({ where: { id } });
         return NextResponse.json({ success: true });
-    } catch (e) {
-        return NextResponse.json({ error: "Failed to delete product (might be in use)" }, { status: 500 });
+    } catch (e: any) {
+        if (e.code === 'P2003') {
+            return NextResponse.json({
+                error: "Cannot delete this product because it has been ordered in the past. To maintain order history, products with existing orders cannot be deleted."
+            }, { status: 400 });
+        }
+        return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
     }
 }
