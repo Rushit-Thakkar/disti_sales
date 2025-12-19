@@ -120,6 +120,7 @@ export default function SalesmanPage() {
                                     onChange={e => setCompanyId(e.target.value)}
                                 >
                                     <option value="">Select a Company</option>
+                                    <option value="ALL">All Companies (Global Access)</option>
                                     {companies.map((company: any) => (
                                         <option key={company.id} value={company.id}>
                                             {company.name}

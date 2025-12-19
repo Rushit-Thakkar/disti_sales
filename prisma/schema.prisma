@@ -14,6 +14,17 @@ model Company {
   users     User[]
   products  Product[]
   orders    Order[]
+  categories Category[]
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  products  Product[]
+  
+  @@index([companyId])
 }
 
 model User {
@@ -23,7 +34,7 @@ model User {
   name      String
   role      String   @default("SALESMAN") // 'DISTRIBUTOR' or 'SALESMAN'
   
-  companyId String?
+  companyId String? // If NULL, it means "Global Salesman" (access to all companies)
   company   Company? @relation(fields: [companyId], references: [id])
   
   orders    Order[]
@@ -32,15 +43,19 @@ model User {
 }
 
 model Product {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   price     Decimal
   companyId String
-  company   Company  @relation(fields: [companyId], references: [id])
+  company   Company   @relation(fields: [companyId], references: [id])
   
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
   orderItems OrderItem[]
 
   @@index([companyId])
+  @@index([categoryId])
 }
 
 model Party {

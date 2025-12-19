@@ -15,11 +15,14 @@ export async function POST(req: Request) {
     try {
         const { name, email, password, companyId } = await req.json();
 
-        if (!companyId) {
-            return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
+        if (!password) {
+            return NextResponse.json({ error: "Password is required" }, { status: 400 });
         }
 
         const hashedPassword = await hash(password, 10);
+
+        // If companyId is "ALL", set it to null for global access
+        const finalCompanyId = (companyId === 'ALL' || companyId === '') ? null : companyId;
 
         const salesman = await prisma.user.create({
             data: {
@@ -27,7 +30,7 @@ export async function POST(req: Request) {
                 email,
                 password: hashedPassword,
                 role: 'SALESMAN',
-                companyId: companyId,
+                companyId: finalCompanyId,
             },
         });
 
