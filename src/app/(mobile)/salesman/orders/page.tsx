@@ -47,7 +47,7 @@ export default function SalesmanHistoryPage() {
                     ))}
                 </div>
             )}
-            )}
+
 
             {/* Floating Action Button for New Order */}
             <a
