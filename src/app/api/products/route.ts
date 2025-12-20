@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,9 +17,15 @@ export async function GET(req: Request) {
     if (companyId) where.companyId = companyId;
     if (categoryId) where.categoryId = categoryId;
 
+    // Filter out soft-deleted products
+    where.deletedAt = null;
+
     const products = await prisma.product.findMany({
         where,
-        include: { category: true },
+        include: {
+            category: true,
+            company: true
+        },
         orderBy: { name: 'asc' }
     });
 
@@ -44,6 +52,10 @@ export async function POST(req: Request) {
                 price: parseFloat(price),
                 companyId,
                 categoryId // Optional
+            },
+            include: {
+                company: true,
+                category: true
             }
         });
 
@@ -65,14 +77,13 @@ export async function DELETE(req: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     try {
-        await prisma.product.delete({ where: { id } });
+        // Soft delete: update deletedAt instead of removing the record
+        await prisma.product.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        });
         return NextResponse.json({ success: true });
     } catch (e: any) {
-        if (e.code === 'P2003') {
-            return NextResponse.json({
-                error: "Cannot delete this product because it has been ordered in the past. To maintain order history, products with existing orders cannot be deleted."
-            }, { status: 400 });
-        }
         return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
     }
 }

@@ -18,7 +18,7 @@ export default function ProductsPage() {
     const fetchData = async () => {
         try {
             const [prodRes, compRes, catRes] = await Promise.all([
-                fetch('/api/products'),
+                fetch('/api/products', { cache: 'no-store' }),
                 fetch('/api/admin/companies'),
                 fetch('/api/categories?companyId=' + (companyId || ''))
             ]);
@@ -256,7 +256,7 @@ export default function ProductsPage() {
                                             <td className="px-6 py-4 text-gray-500">{product.category?.name || '-'}</td>
                                             <td className="px-6 py-4">
                                                 <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-medium border border-blue-100">
-                                                    {product.company?.name || 'Unknown'}
+                                                    {product.company?.name || `Unknown (${product.companyId})`}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">

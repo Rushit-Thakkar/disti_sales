@@ -54,6 +54,8 @@ model Product {
 
   orderItems OrderItem[]
 
+  deletedAt DateTime?
+
   @@index([companyId])
   @@index([categoryId])
 }
