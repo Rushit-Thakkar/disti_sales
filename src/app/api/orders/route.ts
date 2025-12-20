@@ -69,18 +69,31 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized. Only Salesmen or Distributors can create orders." }, { status: 403 });
     }
 
-    const { items, partyId } = await req.json();
+    const { items, partyId, companyId: requestedCompanyId } = await req.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
         return NextResponse.json({ error: "No items in order" }, { status: 400 });
     }
 
-    // Must provide partyId if available, but optional in schema.
-    // Ideally we should enforce it now, but schema says optional.
-    // Let's pass it if present.
-
     const userId = (user as any).id;
-    const companyId = (user as any).companyId;
+    let targetCompanyId = (user as any).companyId; // Default to user's company
+
+    // Validation for Global Salesman
+    if ((user as any).role === 'SALESMAN') {
+        if (!targetCompanyId) {
+            // Global Salesman MUST provide a companyId
+            if (!requestedCompanyId) {
+                return NextResponse.json({ error: "Global Salesman must specify a company" }, { status: 400 });
+            }
+            targetCompanyId = requestedCompanyId;
+        } else {
+            // Regular Salesman: Must match their company
+            // (Optional: we could ignore requestedCompanyId or error if it mismatches)
+        }
+    } else if ((user as any).role === 'DISTRIBUTOR') {
+        // Distributor creating order: default to their company, or allow override if we start supporting multi-company distributors
+        targetCompanyId = (user as any).companyId;
+    }
 
     // Calculate total and Verify products
     let totalAmount = 0;
@@ -90,10 +103,9 @@ export async function POST(req: Request) {
         const product = await prisma.product.findUnique({ where: { id: item.productId } });
         if (!product) continue;
 
-        // Ensure product belongs to user's company (if user has one - Disti or Salesman)
-        // Salesman: user.companyId must match product.companyId
-        if ((user as any).role === 'SALESMAN' && product.companyId !== (user as any).companyId) {
-            return NextResponse.json({ error: `Product ${product.name} does not belong to your company` }, { status: 400 });
+        // Ensure product belongs to the TARGET company
+        if (product.companyId !== targetCompanyId) {
+            return NextResponse.json({ error: `Product ${product.name} does not belong to the selected company` }, { status: 400 });
         }
 
         totalAmount += Number(product.price) * item.quantity;
@@ -108,7 +120,7 @@ export async function POST(req: Request) {
         const order = await prisma.order.create({
             data: {
                 salesman: { connect: { id: userId } },
-                company: { connect: { id: companyId } },
+                company: { connect: { id: targetCompanyId } },
                 totalAmount: totalAmount,
                 ...(partyId ? { party: { connect: { id: partyId } } } : {}),
                 items: {
@@ -123,7 +135,7 @@ export async function POST(req: Request) {
             const fs = require('fs');
             const path = require('path');
             const logPath = path.join(process.cwd(), 'debug_order.txt');
-            fs.appendFileSync(logPath, `[${new Date().toISOString()}] Order Error: ${error}. Payload: ${JSON.stringify({ partyId, companyId, items: validItems })}\n`);
+            fs.appendFileSync(logPath, `[${new Date().toISOString()}] Order Error: ${error}. Payload: ${JSON.stringify({ partyId, companyId: targetCompanyId, items })}\n`);
         } catch { }
         return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }

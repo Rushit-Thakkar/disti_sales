@@ -60,12 +60,15 @@ export default function CreateOrderPage() {
     const submitOrder = async () => {
         if (!selectedParty) return alert("Select a party");
         if (cart.length === 0) return alert("Cart is empty");
+        // Ensure company is selected (it should be by step 2, but just in case)
+        if (!selectedCompany) return alert("Select a company");
 
         setLoading(true);
         const res = await fetch('/api/orders', {
             method: 'POST',
             body: JSON.stringify({
                 partyId: selectedParty.id,
+                companyId: selectedCompany.id,
                 items: cart
             }),
             headers: { 'Content-Type': 'application/json' }
