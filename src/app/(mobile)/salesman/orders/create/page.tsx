@@ -84,6 +84,9 @@ export default function CreateOrderPage() {
 
     return (
         <div className="p-4 space-y-6">
+            <div className="bg-red-600 text-white p-4 font-bold text-center rounded-xl animate-pulse">
+                VERSION 2 LIVE - RELOAD SUCCESSFUL
+            </div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                 New Order (v2) {step > 1 && `(Step ${step}/4)`}
             </h1>
