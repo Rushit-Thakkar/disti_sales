@@ -16,7 +16,7 @@ export async function GET() {
     // SalesmanPage is Admin-only (creating salesmen).
     // So this should be protected for DISTRIBUTOR.
 
-    if (!session || (session.user as any).role !== 'DISTRIBUTOR') {
+    if (!session || ((session.user as any).role !== 'DISTRIBUTOR' && (session.user as any).role !== 'SALESMAN')) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
