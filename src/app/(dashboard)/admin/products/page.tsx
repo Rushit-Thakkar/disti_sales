@@ -130,7 +130,7 @@ export default function ProductsPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                    Manage Products
+                    Manage Products (v2)
                 </h1>
             </div>
 

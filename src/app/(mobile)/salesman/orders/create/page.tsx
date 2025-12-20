@@ -85,7 +85,7 @@ export default function CreateOrderPage() {
     return (
         <div className="p-4 space-y-6">
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                New Order {step > 1 && `(Step ${step}/4)`}
+                New Order (v2) {step > 1 && `(Step ${step}/4)`}
             </h1>
 
             {/* Step 1: Select Party */}
